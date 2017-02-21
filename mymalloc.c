@@ -19,11 +19,11 @@ static MemoryData* firstFreeAddress;
 
 boolean initialize() {
 	mainMemory = (MemoryData *)memoryblock; //Creates a representation of main memory as a struct
-        mainMemory->size = 5000 - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
-	mainMemory->isFree = '1'; //
+    mainMemory->size = 5000 - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
+	mainMemory->isFree = TRUE; //
 	mainMemory->startOfData = memoryblock;
-
-	return 1;
+	mainMemory->next = NULL;
+	return TRUE;
 }
 
 //This method will help with finding the first free 
@@ -31,10 +31,13 @@ boolean initialize() {
 MemoryData* findFirstFree(int size, MemoryData * start) {
 	MemoryData * ptr = start;
 	//Iterate through the memory blocks until you find a block that's both free and can fit in the memory we want to malloc, plus its metadata
-	while ((start->isFree == FALSE || ptr->size < size + sizeof(MemoryData)) && ptr != NULL) {
+	while ( ptr != NULL) {
+		if (ptr->isFree == TRUE && ptr->size > size + sizeof(MemoryData)) {
+			return ptr;
+		}
 		ptr = ptr->next;
 	}
-	return ptr;
+	return NULL;
 }
 
 void * mymalloc(int size, char* myfile, int line) {
@@ -42,7 +45,7 @@ void * mymalloc(int size, char* myfile, int line) {
 	
 	if(size <= 0) { 
 		printf("You have attempted to allocate a non-positive number bytes in File: '%s' Line: '%d'\n", myfile, line); 
-		return 0;
+		return FALSE;
 	}	
 	
 	printf("%s\n", "Size is enough");
@@ -63,21 +66,12 @@ void * mymalloc(int size, char* myfile, int line) {
 		
 		printf("%s\n", "Found address is not null...");
 		
-		MemoryData* newFree = (MemoryData *)(firstFreeAddress + sizeof(MemoryData) + size); //Keeps track of free index
-		printf("%s\n", "newFree declared successfully...");
-		
-		
-
-		if(newFree == NULL) {
-			printf("%s\n", "newFree is NULL");
-			return NULL;
-		}
-
-		
-		
-		newFree->size = 5000 - sizeof(MemoryData) - size; //This keeps track of how much memory is free
-		printf("%s\n", "Added size entry to newFree");
-		
+		MemoryData* newFree = (MemoryData *)((char *)firstFreeAddress + sizeof(MemoryData) + size); //Keeps track of free index
+		printf("%d\n", firstFreeAddress);
+		printf("%d\n", sizeof(MemoryData) + size);
+		printf("%d\n", (char *)firstFreeAddress + sizeof(MemoryData) + size);
+		newFree->size = firstFreeAddress->size - sizeof(MemoryData) - size; //This keeps track of how much memory is free
+		printf("%d\n", newFree->size);
 		newFree->isFree = TRUE; 
 		newFree->next = firstFreeAddress->next;			
 		
@@ -107,5 +101,4 @@ void * mymalloc(int size, char* myfile, int line) {
 void myfree(void * mementry, char * myfile, int line) {
 
 }
-
 
