@@ -63,8 +63,21 @@ void * mymalloc(int size, char* myfile, int line) {
 		
 		printf("%s\n", "Found address is not null...");
 		
-		MemoryData* newFree = (MemoryData *)(firstFreeAddress->size + sizeof(MemoryData) + size); //Keeps track of free index
-		newFree->size = mainMemory - sizeof(MemoryData) - size; //This keeps track of how much memory is free
+		MemoryData* newFree = (MemoryData *)(firstFreeAddress + sizeof(MemoryData) + size); //Keeps track of free index
+		printf("%s\n", "newFree declared successfully...");
+		
+		
+
+		if(newFree == NULL) {
+			printf("%s\n", "newFree is NULL");
+			return NULL;
+		}
+
+		
+		
+		newFree->size = 5000 - sizeof(MemoryData) - size; //This keeps track of how much memory is free
+		printf("%s\n", "Added size entry to newFree");
+		
 		newFree->isFree = TRUE; 
 		newFree->next = firstFreeAddress->next;			
 		
