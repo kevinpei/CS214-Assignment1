@@ -18,17 +18,17 @@ static MemoryData* mainMemory;
 static MemoryData* firstFreeAddress; 
 
 boolean initialize() {
-	mainMemory = (MemoryData *)memoryBlock; //Creates a representation of main memory as a struct
+	mainMemory = (MemoryData *)memoryblock; //Creates a representation of main memory as a struct
         mainMemory->size = 5000 - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
 	mainMemory->isFree = '1'; //
 	mainMemory->startOfData = memoryblock;
-	dataList = mainMemory; //Add to list. 
+ 
 	return 1;
 }
 
 //This method will help with finding the first free 
 
-MemoryData* findFirstFree(MemoryData * start) {
+MemoryData* findFirstFree(int size,MemoryData * start) {
 	MemoryData * ptr = start;
 	//Iterate through the memory blocks until you find a block that's both free and can fit in the memory we want to malloc, plus its metadata
 	while ((start->isFree == FALSE || ptr->size < size + sizeof(MemoryData)) && ptr != NULL) {
@@ -51,7 +51,7 @@ void * mymalloc(int size, char* myfile, int line) {
 	} 
 	
 	
-	MemoryData* firstFreeAddress = findFirstFree(); 
+	MemoryData* firstFreeAddress = findFirstFree(size,firstFreeAddress); 
 
 	if(firstFreeAddress != NULL) {  // This means that we have enough space in "main memory" to allocate
 		//Set new memory location for free memory
@@ -65,6 +65,11 @@ void * mymalloc(int size, char* myfile, int line) {
 		firstFreeAddress->size = size;
 		firstFreeAddress->isFree = FALSE; 
 		firstFreeAddress->next = newFree;
+		
+		MemoryData test = *(firstFreeAddress + 1);
+	
+		printf("%d\n", test.size);
+		printf("%d\n", test.isFree); 
 		
 		return firstFreeAddress + 1;
 	} else {

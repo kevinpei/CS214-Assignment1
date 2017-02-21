@@ -1,4 +1,4 @@
-PROGRAMS = mymalloc test
+PROGRAMS = test
 
 CC = gcc
 CFLAGS = -Wall
