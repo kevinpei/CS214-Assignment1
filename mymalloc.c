@@ -26,27 +26,9 @@ boolean initialize() {
 	return 1;
 }
 
-/*
-
-int main(int argc, char * argv[]) {
-	struct MemoryData * node;
-	node = (struct MemoryData *) memoryblock; 
-
-	node->size = 1239810239;
-	node->next = NULL;
-	node->arrayPtr = memoryBlock;
-
-	printf("%d\n",node->size);
-} 
-
-
-
-*/
-
-
 //This method will help with finding the first free 
 
-MemoryData* findFirstFree(MemoryData * start, int size) {
+MemoryData* findFirstFree(MemoryData * start) {
 	MemoryData * ptr = start;
 	//Iterate through the memory blocks until you find a block that's both free and can fit in the memory we want to malloc, plus its metadata
 	while ((start->isFree == FALSE || ptr->size < size + sizeof(MemoryData)) && ptr != NULL) {
@@ -61,14 +43,17 @@ void * mymalloc(int size, char* myfile, int line) {
 	if(size <= 0) { 
 		printf("You have attempted to allocate a non-positive number bytes in File: '%s' Line: '%d'\n", myfile, line); 
 		return 0;
-	}
+	}	
 
 	if(memInit != 1) {
 		initialize(); 
-		firstFreeAddress = mainMemory; 
+		firstFreeAddress = mainMemory;
 	} 
+	
+	
+	MemoryData* firstFreeAddress = findFirstFree(); 
 
-	if(size <= firstFreeAddress->size + sizeof(MemoryData)) { // This means that we have enough space in "main memory" to allocate
+	if(firstFreeAddress != NULL) {  // This means that we have enough space in "main memory" to allocate
 		//Set new memory location for free memory
 
 		MemoryData* newFree = (MemoryData *)(firstFreeAddress->size + sizeof(MemoryData) + size); //Keeps track of free index
@@ -81,10 +66,10 @@ void * mymalloc(int size, char* myfile, int line) {
 		firstFreeAddress->isFree = FALSE; 
 		firstFreeAddress->next = newFree;
 		
-		return (char*)firstFreeAddress;
- 
+		return firstFreeAddress + 1;
 	} else {
 		printf("There is not enough space in memory in order to allocated the amount requested in File: '%s' Line: '%d'\n", myfile, line);
+		return NULL;
 	}				 
 }
 
