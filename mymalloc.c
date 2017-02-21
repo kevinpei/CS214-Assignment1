@@ -46,10 +46,13 @@ int main(int argc, char * argv[]) {
 
 //This method will help with finding the first free 
 
-MemoryData* findFirstFree(MemoryData * start) {
-	if(start->isFree == 'TRUE') {
-	
+MemoryData* findFirstFree(MemoryData * start, int size) {
+	MemoryData * ptr = start;
+	//Iterate through the memory blocks until you find a block that's both free and can fit in the memory we want to malloc, plus its metadata
+	while ((start->isFree == FALSE || ptr->size < size + sizeof(MemoryData)) && ptr != NULL) {
+		ptr = ptr->next;
 	}
+	return ptr;
 }
 
 void * mymalloc(int size, char* myfile, int line) {
