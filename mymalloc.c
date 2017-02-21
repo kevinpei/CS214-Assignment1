@@ -52,19 +52,17 @@ void * mymalloc(int size, char* myfile, int line) {
 		initialize(); 
 		firstFreeAddress = mainMemory;
 		memInit = TRUE;
-	} 
-	
-	
-	firstFreeAddress = findFirstFree(size,firstFreeAddress); 
-	
+	} else {
+		firstFreeAddress = findFirstFree(size,firstFreeAddress); 
+	}
+
 	printf("%s\n", "Found first free address");
 		
 	if(firstFreeAddress != NULL) {  // This means that we have enough space in "main memory" to allocate
 		//Set new memory location for free memory
 		
 		printf("%s\n", "Found address is not null...");
-
-
+		
 		MemoryData* newFree = (MemoryData *)(firstFreeAddress->size + sizeof(MemoryData) + size); //Keeps track of free index
 		newFree->size = mainMemory - sizeof(MemoryData) - size; //This keeps track of how much memory is free
 		newFree->isFree = TRUE; 
