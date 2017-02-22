@@ -8,7 +8,7 @@ static boolean memInit = 0;
 
 typedef struct _MemoryData {
 	char * startOfData;
-	struct _MemoryData * next; 
+	struct _MemoryData * next, prev; 
 	short int size;
 	boolean isFree; 
 }MemoryData; 
@@ -23,6 +23,7 @@ boolean initialize() {
 	mainMemory->isFree = TRUE; //
 	mainMemory->startOfData = memoryblock;
 	mainMemory->next = NULL;
+	mainMemory->prev = NULL;
 	return TRUE;
 }
 
@@ -73,7 +74,8 @@ void * mymalloc(int size, char* myfile, int line) {
 		newFree->size = firstFreeAddress->size - sizeof(MemoryData) - size; //This keeps track of how much memory is free
 		printf("%d\n", newFree->size);
 		newFree->isFree = TRUE; 
-		newFree->next = firstFreeAddress->next;			
+		newFree->next = firstFreeAddress->next;	
+		newFree->prev = firstFreeAddress->prev;
 		
 		printf("%s\n", "Created new object and metadata...");
 		
@@ -81,6 +83,7 @@ void * mymalloc(int size, char* myfile, int line) {
 		firstFreeAddress->size = size;
 		firstFreeAddress->isFree = FALSE; 
 		firstFreeAddress->next = newFree;
+		newFree->prev = firstFreeAddress;
 
 		printf("%s\n", "Pointing to new object and metadata");
 			
@@ -99,6 +102,47 @@ void * mymalloc(int size, char* myfile, int line) {
 }
 
 void myfree(void * mementry, char * myfile, int line) {
-
+	// We start the pointer at mainMemory, which is the start of the char array.
+	MemoryData* ptr = mainMemory;
+	
+	// Goes through the linked list of memory blocks until it reaches one whose address matches the address of the freed variable
+	while (ptr != NULL) {
+		if (&(mementry) == &(ptr)) {
+			/* 
+			This code will also merge adjacent free memory blocks, so it checks to see if the next memory block is NULL or not.
+			We do not need to iterate through a while loop because this check will take place after every free, ensuring that every
+			single adjacent free memory block will be merged, preventing future adjacent free memory blocks.
+			*/
+			if (ptr->next != NULL) {
+				/*
+				If the next memory block is free, then set the size of the current memory block to its own size plus the size of the
+				adjacent memory block, which will be its data size plus its metadata size. Also set the current memory block's next
+				pointer to the next pointer of the merged memory block.
+				*/
+				if (ptr->next->isFree == TRUE) {
+					ptr->size = ptr->size + ptr->next->size + sizeof(MemoryData *);
+					ptr->next = ptr->next->next;
+				}					
+			}
+			if (ptr->prev != NULL) {
+				/*
+				If the previous memory block is free, then we need to remove the current memory block and merge it with the previous one.
+				Because metadata comes before data in our code, we move all of the current memory block's metadata to the previous memory block.
+				*/
+				if (ptr->prev->isFree == TRUE) {
+					ptr->prev->size = ptr->size + ptr->prev->size + sizeof(MemoryData *);
+					ptr = ptr->prev;
+				}
+			}
+			// After checking to make sure all adjacent memory blocks are merged, set the block's isFree to TRUE.
+			ptr->isFree = TRUE;
+			return;
+		}
+		// Iterate through the linked list of memory blocks.
+		ptr = ptr->next;
+	}
+	// If there is no memory block with a matching address, then no such variable was ever malloc'ed.
+	printf("No such variable has been allocated in File: '%s' Line: '%d'\n", myfile, line);
+	return;
 }
 
