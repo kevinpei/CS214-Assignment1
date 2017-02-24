@@ -56,17 +56,18 @@ int memgrind4() {
 	int numFree = 0;
 	int sizeMalloc = 0;
 	void* testArray[1000];
+	int sizeArray[1000];
 	while (numMalloc < 1000) {
 		if (rand() % 2 == 0 && sizeMalloc < 5000) {
 			int size = rand() % 64 + 1;
 			testArray[numMalloc] = malloc(size);
-			testArray[numMalloc] = &size;
+			sizeArray[numMalloc] = size;
 			numMalloc++;
 			sizeMalloc += size;
 			printf("%d\t", sizeMalloc);
 		} else {
 			if (numFree < numMalloc) {
-				sizeMalloc -= *testArray[numFree];
+				sizeMalloc -= sizeArray[numFree];
 				free(testArray[numFree]);
 				numFree++;
 				printf("%d\t", sizeMalloc);
