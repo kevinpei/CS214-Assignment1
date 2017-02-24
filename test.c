@@ -8,11 +8,11 @@ int main(int argc, char ** argv)  {
 	z = (int *)malloc(100); 
 	v = (int *)malloc(1000);
 	u = (int *)malloc(10000);
-	myfree(x);
-	myfree(z);
-	myfree(x);
-	myfree(y);
-	myfree(v);
-	myfree(v);
+	free(x);
+	free(z);
+	free(x);
+	free(y);
+	free(v);
+	free(v);
 	return 0; 
 }
