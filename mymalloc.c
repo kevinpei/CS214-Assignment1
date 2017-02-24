@@ -8,7 +8,8 @@ static boolean memInit = 0;
 
 typedef struct _MemoryData {
 	char * startOfData;
-	struct _MemoryData * next, prev; 
+	struct _MemoryData * next;
+	struct _MemoryData * prev; 
 	short int size;
 	boolean isFree; 
 }MemoryData; 
@@ -102,12 +103,17 @@ void * mymalloc(int size, char* myfile, int line) {
 }
 
 void myfree(void * mementry, char * myfile, int line) {
+	printf("Nimrod\n");
 	// We start the pointer at mainMemory, which is the start of the char array.
-	MemoryData* ptr = mainMemory;
-	
+	MemoryData* ptr = (MemoryData *)memoryblock;
+	printf("Does this even work\n");
+	if (ptr == NULL) {
+		printf("FUCK\n");
+	}
 	// Goes through the linked list of memory blocks until it reaches one whose address matches the address of the freed variable
 	while (ptr != NULL) {
-		if (&(mementry) == &(ptr)) {
+		if ((MemoryData *)mementry == ptr) {
+			printf("Found memory block\n");
 			/* 
 			This code will also merge adjacent free memory blocks, so it checks to see if the next memory block is NULL or not.
 			We do not need to iterate through a while loop because this check will take place after every free, ensuring that every
@@ -122,6 +128,7 @@ void myfree(void * mementry, char * myfile, int line) {
 				if (ptr->next->isFree == TRUE) {
 					ptr->size = ptr->size + ptr->next->size + sizeof(MemoryData *);
 					ptr->next = ptr->next->next;
+					printf("Merged blocks forwards\n");
 				}					
 			}
 			if (ptr->prev != NULL) {
@@ -132,10 +139,12 @@ void myfree(void * mementry, char * myfile, int line) {
 				if (ptr->prev->isFree == TRUE) {
 					ptr->prev->size = ptr->size + ptr->prev->size + sizeof(MemoryData *);
 					ptr = ptr->prev;
+					printf("Merged blocks backwards\n");
 				}
 			}
 			// After checking to make sure all adjacent memory blocks are merged, set the block's isFree to TRUE.
 			ptr->isFree = TRUE;
+			printf("Freed\n");
 			return;
 		}
 		// Iterate through the linked list of memory blocks.
