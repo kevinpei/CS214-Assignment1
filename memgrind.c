@@ -1,100 +1,89 @@
-#include "mymalloc.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-#define FALSE 0
-#define TRUE 1
-#define boolean char
-
-static boolean memInit = 0;
-
-typedef struct _MemoryData {
-	char * startOfData;
-	struct _MemoryData * next; 
-	short int size;
-	boolean isFree; 
-}MemoryData; 
-
-static char memoryblock[5000]; //Big block of memory
-static MemoryData* mainMemory;
-static MemoryData* firstFreeAddress; 
-
-boolean initialize() {
-	mainMemory = (MemoryData *)memoryblock; //Creates a representation of main memory as a struct
-        mainMemory->size = 5000 - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
-	mainMemory->isFree = '1'; //
-	mainMemory->startOfData = memoryblock;
-
-	return 1;
-}
-
-//This method will help with finding the first free 
-
-MemoryData* findFirstFree(int size, MemoryData * start) {
-	MemoryData * ptr = start;
-	//Iterate through the memory blocks until you find a block that's both free and can fit in the memory we want to malloc, plus its metadata
-	while ((start->isFree == FALSE || ptr->size < size + sizeof(MemoryData)) && ptr != NULL) {
-		ptr = ptr->next;
+int memgrind1() {
+	void* testArray[1000];
+	int i = 0;
+	while (i < 1000) {
+		testArray[i] = malloc(1);
+		printf("%d\t", i);
+		i++;
 	}
-	return ptr;
-}
-
-void * mymalloc(int size, char* myfile, int line) {
-	//If the attempted allocated size is 0, print error message and return 0
-	
-	if(size <= 0) { 
-		printf("You have attempted to allocate a non-positive number bytes in File: '%s' Line: '%d'\n", myfile, line); 
-		return 0;
-	}	
-	
-	printf("%s\n", "Size is enough");
-
-	if(memInit == FALSE) {
-		printf("%s\n", "Initializing memory...");
-		initialize(); 
-		firstFreeAddress = mainMemory;
-		memInit = TRUE;
-	} else {
-		firstFreeAddress = findFirstFree(size,firstFreeAddress); 
+	i = 0;
+	while (i < 1000) {
+		free(testArray[i]);
+		printf("%d\t", i);
+		i++;
 	}
-
-	printf("%s\n", "Found first free address");
-		
-	if(firstFreeAddress != NULL) {  // This means that we have enough space in "main memory" to allocate
-		//Set new memory location for free memory
-		
-		printf("%s\n", "Found address is not null...");
-		
-		MemoryData* newFree = (MemoryData *)(firstFreeAddress + 1 + (size/sizeof(MemoryData))); //Keeps track of free index
-		printf("%d\n", firstFreeAddress);
-		printf("%d\n", firstFreeAddress + 1);
-		printf("%d\n", firstFreeAddress + 1 + (size/sizeof(MemoryData)));
-		newFree->size = 5000 - sizeof(MemoryData) - size; //This keeps track of how much memory is free
-		newFree->isFree = TRUE; 
-		newFree->next = firstFreeAddress->next;			
-		
-		printf("%s\n", "Created new object and metadata...");
-		
-		//Now I have to change the values for the data I allocated to something.
-		firstFreeAddress->size = size;
-		firstFreeAddress->isFree = FALSE; 
-		firstFreeAddress->next = newFree;
-
-		printf("%s\n", "Pointing to new object and metadata");
-			
-		MemoryData test = *(firstFreeAddress);
-	
-		printf("%d\n", test.size);
-		printf("%d\n", test.isFree); 
-		
-		printf("%s\n", "HOME STRETCH!!!");
-
-		return firstFreeAddress + 1;
-	} else {
-		printf("There is not enough space in memory in order to allocated the amount requested in File: '%s' Line: '%d'\n", myfile, line);
-		return NULL;
-	}				 
+	return 0;
 }
 
-void myfree(void * mementry, char * myfile, int line) {
-
+int memgrind2() {
+	int i = 0;
+	while (i < 1000) {
+		void* test = malloc(1);
+		free(test);
+		printf("%d\t", i);
+		i++;
+	}
+	return 0;
 }
 
+int memgrind3() {
+	int numMalloc = 0;
+	int numFree = 0;
+	void* testArray[1000];
+	while (numMalloc < 1000) {
+		if (rand() % 2 == 0) {
+			testArray[numMalloc] = malloc(1);
+			numMalloc++;
+		} else {
+			if (numFree < numMalloc) {
+				free(testArray[numFree]);
+				numFree++;
+			}
+		}
+	}
+	while (numFree < numMalloc) {
+		free(testArray[numFree]);
+		numFree++;
+	}
+	return 0;
+}
+
+int memgrind4() {
+	int numMalloc = 0;
+	int numFree = 0;
+	int sizeMalloc = 0;
+	void* testArray[1000];
+	while (numMalloc < 1000) {
+		if (rand() % 2 == 0 && sizeMalloc < 5000) {
+			int size = rand() % 64 + 1;
+			testArray[numMalloc] = malloc(size);
+			testArray[numMalloc] = &size;
+			numMalloc++;
+			sizeMalloc += size;
+			printf("%d\t", sizeMalloc);
+		} else {
+			if (numFree < numMalloc) {
+				sizeMalloc -= *testArray[numFree];
+				free(testArray[numFree]);
+				numFree++;
+				printf("%d\t", sizeMalloc);
+			}
+		}
+	}
+	while (numFree < numMalloc) {
+		free(testArray[numFree]);
+		numFree++;
+	}
+	return 0;
+}
+
+int main(int argc, char *argv[]) {
+	memgrind1();
+	memgrind2();
+	memgrind3();
+	memgrind4();
+	return 0;
+}
