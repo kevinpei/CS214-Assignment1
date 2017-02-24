@@ -13,13 +13,13 @@ typedef struct _MemoryData {
 	boolean isFree; 
 }MemoryData; 
 
-static char memoryblock[5000]; //Big block of memory
+static char memoryblock[memorySize]; //Big block of memory
 static MemoryData* mainMemory;
 static MemoryData* firstFreeAddress; 
 
 boolean initialize() {
 	mainMemory = (MemoryData *)memoryblock; //Creates a representation of main memory as a struct
-    mainMemory->size = 5000 - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
+    mainMemory->size = memorySize - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
 	mainMemory->isFree = TRUE; //
 	mainMemory->next = NULL;
 	mainMemory->prev = NULL;
