@@ -7,7 +7,6 @@
 static boolean memInit = 0;
 
 typedef struct _MemoryData {
-	char * startOfData;
 	struct _MemoryData * next;
 	struct _MemoryData * prev; 
 	short int size;
@@ -20,9 +19,8 @@ static MemoryData* firstFreeAddress;
 
 boolean initialize() {
 	mainMemory = (MemoryData *)memoryblock; //Creates a representation of main memory as a struct
-    	mainMemory->size = 5000 - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
+    mainMemory->size = 5000 - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
 	mainMemory->isFree = TRUE; //
-	mainMemory->startOfData = memoryblock;
 	mainMemory->next = NULL;
 	mainMemory->prev = NULL;
 	return TRUE;
@@ -124,7 +122,7 @@ void myfree(void * mementry, char * myfile, int line) {
 		printf("%s\n", "In Loop");
 		printf("%d\n", ptr);
 
-		if (mementry - sizeof(MemoryData) == ptr) {
+		if (mementry - sizeof(MemoryData) == ptr && ptr->isFree == FALSE) {
 			printf("Found memory block\n");
 			/* 
 			This code will also merge adjacent free memory blocks, so it checks to see if the next memory block is NULL or not.
@@ -133,6 +131,20 @@ void myfree(void * mementry, char * myfile, int line) {
 			*/
 			printf("%d\n", ptr->isFree);
 
+			if (ptr->prev != NULL) {
+				/*
+				If the previous memory block is free, then we need to remove the current memory block and merge it with the previous one.
+				Because metadata comes before data in our code, we move all of the current memory block's metadata to the previous memory block.
+				*/
+				if (ptr->prev->isFree == TRUE) {
+					ptr->prev->size = ptr->size + ptr->prev->size + sizeof(MemoryData);
+					ptr = ptr->prev;
+					ptr->next = ptr->next->next;
+					printf("%d\n",ptr->next);
+					printf("Merged blocks backwards\n");
+				}
+			}
+			
 			if (ptr->next != NULL) {
 				/*
 				If the next memory block is free, then set the size of the current memory block to its own size plus the size of the
@@ -140,22 +152,17 @@ void myfree(void * mementry, char * myfile, int line) {
 				pointer to the next pointer of the merged memory block.
 				*/
 				if (ptr->next->isFree == TRUE) {
-					ptr->size = ptr->size + ptr->next->size + sizeof(MemoryData *);
+					ptr->size = ptr->size + ptr->next->size + sizeof(MemoryData);
 					ptr->next = ptr->next->next;
+					if(ptr->next != NULL) {
+						ptr->next->prev = ptr;
+					}
 					printf("Merged blocks forwards\n");
-				}					
-			}
-			if (ptr->prev != NULL) {
-				/*
-				If the previous memory block is free, then we need to remove the current memory block and merge it with the previous one.
-				Because metadata comes before data in our code, we move all of the current memory block's metadata to the previous memory block.
-				*/
-				if (ptr->prev->isFree == TRUE) {
-					ptr->prev->size = ptr->size + ptr->prev->size + sizeof(MemoryData *);
-					ptr = ptr->prev;
-					printf("Merged blocks backwards\n");
+				} else {
+					ptr->next->prev = ptr;
 				}
 			}
+			
 			// After checking to make sure all adjacent memory blocks are merged, set the block's isFree to TRUE.
 			ptr->isFree = TRUE;
 			printf("Freed\n");
