@@ -113,6 +113,72 @@ int memgrind5() {
 	return 0;
 }
 
+int memgrind6() { 
+	void* mementries[1000];
+	int index = 0; 
+	int amountToMalloc = 1; 	
+
+	while(index < 1000) {
+		mementries[index] = malloc(amountToMalloc);
+		
+		if(mementries[index] == NULL) { // If NULL is returned, then there is no more space in memory which can fit. 
+			break;	
+		} else { 
+			amountToMalloc = amountToMalloc * 2; 
+			index++; 
+		}
+	}
+
+	int max_index = index;
+	index = 0; 
+
+	printf("Index before 2nd loop is: %d\n", index);
+	printf("Max Index before 2nd loop is %d\n", max_index); 
+
+	while(index < max_index) {
+		printf("Second loop index is: %d\n", index); 
+		free(mementries[index]); 
+		index = index + 2; 
+	}
+	
+	index = 0;
+	
+	printf("Index before 3rd loop is: %d\n", index);
+	printf("Max Index before 3rd loop is %d\n", max_index);
+
+	while(index < 1000) {
+		printf("Index in 3rd loop is: %d\n", index);
+
+		mementries[index] = malloc(1);
+		if(mementries[index] == NULL) { 
+			break;
+		}
+		if(index >= max_index) {
+			index ++;
+		} else {
+			index = index + 2; 
+		}
+	}
+	
+	max_index = index;		
+	index = 0;
+ 
+	printf("Index before 4th loop is: %d\n", index);
+        printf("Max Index before 4th loop is %d\n", max_index);
+
+	printf("%s\n", "4th LOOP!!!");
+	
+	while(index < max_index) {
+		
+		printf("Index is: %d\n", index);
+		free(mementries[index]);
+		index++; 
+	}
+
+	return 0;
+}
+
+
 int main(int argc, char *argv[]) {
 //	printf("%lld\n", getAverageRunningTime(memgrind1));
 	printf("%lld\n", getAverageRunningTime(memgrind2));
@@ -121,3 +187,4 @@ int main(int argc, char *argv[]) {
 //	printf("%lld\n", getAverageRunningTime(memgrind5));
 	return 0;
 }
+
