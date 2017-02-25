@@ -141,8 +141,13 @@ void myfree(void * mementry, char * myfile, int line) {
 					printf("SIZE:%d\n", ptr->prev->size);
 					ptr = ptr->prev;
 					ptr->next = ptr->next->next;
+					if (ptr->prev != NULL) {
+						ptr->prev->next = ptr;
+					}
 					printf("%d\n",ptr->next);
 					printf("Merged blocks backwards\n");
+				} else {
+					ptr->prev->next = ptr;
 				}
 			}
 			
@@ -156,7 +161,7 @@ void myfree(void * mementry, char * myfile, int line) {
 					ptr->size = ptr->next->size + (char *)ptr->next - (char*)ptr;
 					printf("SIZE:%d\n", ptr->size);
 					ptr->next = ptr->next->next;
-					if(ptr->next != NULL) {
+					if (ptr->next != NULL) {
 						ptr->next->prev = ptr;
 					}
 					printf("Merged blocks forwards\n");
