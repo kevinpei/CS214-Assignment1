@@ -12,6 +12,5 @@ typedef struct _MemoryData {
 	struct _MemoryData * next;
 	struct _MemoryData * prev; 
 	short int size;
-	boolean isFree; 
-	boolean isUsed;
+	boolean isFree;  
 }MemoryData; 
