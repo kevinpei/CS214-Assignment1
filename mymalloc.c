@@ -8,7 +8,7 @@ static MemoryData* mainMemory;
 
 boolean initialize() {
 	mainMemory = (MemoryData *)memoryblock; //Creates a representation of main memory as a struct
-    	mainMemory->size = memorySize - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
+    mainMemory->size = memorySize - sizeof(MemoryData); //The size of the memory that is available left for uses is this size   
 	mainMemory->isFree = TRUE; //
 	mainMemory->next = NULL;
 	mainMemory->prev = NULL;
@@ -33,7 +33,6 @@ MemoryData* findFirstFree(int size, MemoryData * start) {
 void * mymalloc(int size, char* myfile, int line) {
 	MemoryData* firstFreeAddress; 
 	//If the attempted allocated size is 0, print error message and return 0
-	
 	if(size <= 0) { 
 		printf("You have attempted to allocate a non-positive number bytes in File: '%s' Line: '%d'\n", myfile, line); 
 		return FALSE;
@@ -63,12 +62,10 @@ void * mymalloc(int size, char* myfile, int line) {
 					firstFreeAddress->next = newFree;
 				}
 			}
+			firstFreeAddress->size = size;
+			firstFreeAddress->isFree = FALSE; 
+			firstFreeAddress->isUsed = TRUE;
 		}		
-
-		firstFreeAddress->size = size;
-		firstFreeAddress->isFree = FALSE; 
-		firstFreeAddress->isUsed = TRUE;
-		
 		return (char*)firstFreeAddress + sizeof(MemoryData);
 	} else {
 		printf("There is not enough space in memory in order to allocated the amount requested in File: '%s' Line: '%d'\n", myfile, line);
