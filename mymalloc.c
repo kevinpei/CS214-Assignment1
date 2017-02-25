@@ -8,18 +8,16 @@ static MemoryData* mainMemory;
 
 boolean initialize() {
 	mainMemory = (MemoryData *)memoryblock; //Creates a representation of main memory as a struct
-    mainMemory->size = memorySize - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
-	mainMemory->isFree = TRUE; 
+    	mainMemory->size = memorySize - sizeof(MemoryData); //The size of the memory that is available left for uses is this size    
+	mainMemory->isFree = TRUE; //
 	mainMemory->next = NULL;
 	mainMemory->prev = NULL;
-	mainMemory->isUsed = TRUE;
 	return TRUE;
 }
 
 //This method will help with finding the first free 
 
 MemoryData* findFirstFree(int size, MemoryData * start) {
-	printf("Is this working\n");
 	MemoryData * ptr = start;
 	//Iterate through the memory blocks until you find a block that's both free and can fit in the memory we want to malloc, plus its metadata
 	while ( ptr != NULL) {
@@ -32,6 +30,8 @@ MemoryData* findFirstFree(int size, MemoryData * start) {
 }
 
 void * mymalloc(int size, char* myfile, int line) {
+	
+	printf("MALLOC CALL");
 	MemoryData* firstFreeAddress; 
 	//If the attempted allocated size is 0, print error message and return 0
 	
@@ -45,26 +45,40 @@ void * mymalloc(int size, char* myfile, int line) {
 		firstFreeAddress = mainMemory;
 		memInit = TRUE;
 	} else {
-		firstFreeAddress = findFirstFree(size,mainMemory); 
+				
+		firstFreeAddress = findFirstFree(size,mainMemory);
+		printf("FIRST FREE RUN"); 
 	}
 		
 	if(firstFreeAddress != NULL) {  // This means that we have enough space in "main memory" to allocate
 		//Set new memory location for free memory
-		printf("Free data: %d\n", firstFreeAddress->size);
-		MemoryData* newFree = (MemoryData *)((char *)firstFreeAddress + sizeof(MemoryData) + size); //Keeps track of free index
-		if (newFree->isUsed == FALSE) {
+		
+		int bytesLeft = firstFreeAddress->size;
+		int bytesUsed = 0; 
+		
+		if(firstFreeAddress->next == NULL && firstFreeAddress->size >= size + sizeof(MemoryData)) {	
+			MemoryData* newFree = (MemoryData *)((char *)firstFreeAddress + sizeof(MemoryData) + size); //Keeps track of free index
+		
 			newFree->size = firstFreeAddress->size - sizeof(MemoryData) - size; //This keeps track of how much memory is free
-			if (newFree->size > 0) {
-				newFree->isFree = TRUE; 
-				newFree->next = firstFreeAddress->next;	
-				newFree->prev = firstFreeAddress;
-				firstFreeAddress->next = newFree;
-				newFree->isUsed = TRUE;
-			}
-			//Now I have to change the values for the data I allocated to something.
+			newFree->isFree = TRUE; 
+			newFree->next = firstFreeAddress->next;	
+			newFree->prev = firstFreeAddress;
+			firstFreeAddress->next = newFree;		
+		}
+		//bytesUsed = size ;		
+
+		//Now I have to change the values for the data I allocated to something.
 			firstFreeAddress->size = size;
 			firstFreeAddress->isFree = FALSE; 
-		}
+			//firstFreeAddress->next = newFree;
+		
+
+		bytesUsed = size;
+		printf("The number of bytes you had before malloc was: %d bytes\n", bytesLeft); 
+		printf("The number of bytes you malloced is %d bytes\n", bytesUsed);
+
+		printf("The number of bytes you have available to use is %d bytes\n", bytesLeft - bytesUsed - 24); 
+		
 		return (char*)firstFreeAddress + sizeof(MemoryData);
 	} else {
 		printf("There is not enough space in memory in order to allocated the amount requested in File: '%s' Line: '%d'\n", myfile, line);
