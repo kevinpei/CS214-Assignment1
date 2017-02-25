@@ -15,7 +15,7 @@ typedef struct _MemoryData {
 
 static char memoryblock[memorySize]; //Big block of memory
 static MemoryData* mainMemory;
-static MemoryData* firstFreeAddress; 
+
 
 boolean initialize() {
 	mainMemory = (MemoryData *)memoryblock; //Creates a representation of main memory as a struct
@@ -41,6 +41,7 @@ MemoryData* findFirstFree(int size, MemoryData * start) {
 }
 
 void * mymalloc(int size, char* myfile, int line) {
+	MemoryData* firstFreeAddress; 
 	//If the attempted allocated size is 0, print error message and return 0
 	
 	if(size <= 0) { 
@@ -56,7 +57,7 @@ void * mymalloc(int size, char* myfile, int line) {
 		firstFreeAddress = mainMemory;
 		memInit = TRUE;
 	} else {
-		firstFreeAddress = findFirstFree(size,firstFreeAddress); 
+		firstFreeAddress = findFirstFree(size,mainMemory); 
 	}
 
 	printf("%s\n", "Found first free address");
@@ -74,7 +75,7 @@ void * mymalloc(int size, char* myfile, int line) {
 		printf("%d\n", newFree->size);
 		newFree->isFree = TRUE; 
 		newFree->next = firstFreeAddress->next;	
-		newFree->prev = firstFreeAddress->prev;
+		newFree->prev = firstFreeAddress;
 		
 		printf("%s\n", "Created new object and metadata...");
 		
@@ -82,7 +83,6 @@ void * mymalloc(int size, char* myfile, int line) {
 		firstFreeAddress->size = size;
 		firstFreeAddress->isFree = FALSE; 
 		firstFreeAddress->next = newFree;
-		newFree->prev = firstFreeAddress;
 
 		printf("%s\n", "Pointing to new object and metadata");
 			
@@ -137,7 +137,8 @@ void myfree(void * mementry, char * myfile, int line) {
 				Because metadata comes before data in our code, we move all of the current memory block's metadata to the previous memory block.
 				*/
 				if (ptr->prev->isFree == TRUE) {
-					ptr->prev->size = ptr->size + ptr->prev->size + sizeof(MemoryData);
+					ptr->prev->size = ptr->size + (char *)ptr - (char*)ptr->prev;
+					printf("SIZE:%d\n", ptr->prev->size);
 					ptr = ptr->prev;
 					ptr->next = ptr->next->next;
 					printf("%d\n",ptr->next);
@@ -152,7 +153,8 @@ void myfree(void * mementry, char * myfile, int line) {
 				pointer to the next pointer of the merged memory block.
 				*/
 				if (ptr->next->isFree == TRUE) {
-					ptr->size = ptr->size + ptr->next->size + sizeof(MemoryData);
+					ptr->size = ptr->next->size + (char *)ptr->next - (char*)ptr;
+					printf("SIZE:%d\n", ptr->size);
 					ptr->next = ptr->next->next;
 					if(ptr->next != NULL) {
 						ptr->next->prev = ptr;
