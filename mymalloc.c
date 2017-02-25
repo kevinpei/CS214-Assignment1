@@ -48,52 +48,28 @@ void * mymalloc(int size, char* myfile, int line) {
 		printf("You have attempted to allocate a non-positive number bytes in File: '%s' Line: '%d'\n", myfile, line); 
 		return FALSE;
 	}	
-	
-	printf("%s\n", "Size is enough");
 
 	if(memInit == FALSE) {
-		printf("%s\n", "Initializing memory...");
 		initialize(); 
 		firstFreeAddress = mainMemory;
 		memInit = TRUE;
 	} else {
 		firstFreeAddress = findFirstFree(size,mainMemory); 
 	}
-
-	printf("%s\n", "Found first free address");
 		
 	if(firstFreeAddress != NULL) {  // This means that we have enough space in "main memory" to allocate
 		//Set new memory location for free memory
 		
-		printf("%s\n", "Found address is not null...");
-		
 		MemoryData* newFree = (MemoryData *)((char *)firstFreeAddress + sizeof(MemoryData) + size); //Keeps track of free index
-		printf("%d\n", firstFreeAddress);
-		printf("%d\n", sizeof(MemoryData) + size);
-		printf("%d\n", (char *)firstFreeAddress + sizeof(MemoryData) + size);
 		newFree->size = firstFreeAddress->size - sizeof(MemoryData) - size; //This keeps track of how much memory is free
-		printf("%d\n", newFree->size);
 		newFree->isFree = TRUE; 
 		newFree->next = firstFreeAddress->next;	
 		newFree->prev = firstFreeAddress;
-		
-		printf("%s\n", "Created new object and metadata...");
 		
 		//Now I have to change the values for the data I allocated to something.
 		firstFreeAddress->size = size;
 		firstFreeAddress->isFree = FALSE; 
 		firstFreeAddress->next = newFree;
-
-		printf("%s\n", "Pointing to new object and metadata");
-			
-		MemoryData test = *(firstFreeAddress);
-	
-		printf("%d\n", test.size);
-		printf("%d\n", test.isFree); 
-		
-		printf("%s\n", "HOME STRETCH!!!");
-		
-		printf("%d\n", (char*)firstFreeAddress + sizeof(MemoryData));
 		
 		return (char*)firstFreeAddress + sizeof(MemoryData);
 	} else {
@@ -104,32 +80,19 @@ void * mymalloc(int size, char* myfile, int line) {
 
 void myfree(void * mementry, char * myfile, int line) {
 	
-	printf("%d\n", mementry - sizeof(MemoryData));
-
-	printf("Nimrod\n");
-	
 	// We start the pointer at mainMemory, which is the start of the char array.
 	
 	MemoryData* ptr = (MemoryData *)memoryblock;
-	printf("Does this even work\n");
-	
-	if (ptr == NULL) {
-		printf("FUCK\n");
-	}
 	
 	// Goes through the linked list of memory blocks until it reaches one whose address matches the address of the freed variable
 	while (ptr != NULL) {
-		printf("%s\n", "In Loop");
-		printf("%d\n", ptr);
 
 		if (mementry - sizeof(MemoryData) == ptr && ptr->isFree == FALSE) {
-			printf("Found memory block\n");
 			/* 
 			This code will also merge adjacent free memory blocks, so it checks to see if the next memory block is NULL or not.
 			We do not need to iterate through a while loop because this check will take place after every free, ensuring that every
 			single adjacent free memory block will be merged, preventing future adjacent free memory blocks.
 			*/
-			printf("%d\n", ptr->isFree);
 
 			if (ptr->prev != NULL) {
 				/*
@@ -138,14 +101,11 @@ void myfree(void * mementry, char * myfile, int line) {
 				*/
 				if (ptr->prev->isFree == TRUE) {
 					ptr->prev->size = ptr->size + (char *)ptr - (char*)ptr->prev;
-					printf("SIZE:%d\n", ptr->prev->size);
 					ptr = ptr->prev;
 					ptr->next = ptr->next->next;
 					if (ptr->prev != NULL) {
 						ptr->prev->next = ptr;
 					}
-					printf("%d\n",ptr->next);
-					printf("Merged blocks backwards\n");
 				} else {
 					ptr->prev->next = ptr;
 				}
@@ -159,12 +119,10 @@ void myfree(void * mementry, char * myfile, int line) {
 				*/
 				if (ptr->next->isFree == TRUE) {
 					ptr->size = ptr->next->size + (char *)ptr->next - (char*)ptr;
-					printf("SIZE:%d\n", ptr->size);
 					ptr->next = ptr->next->next;
 					if (ptr->next != NULL) {
 						ptr->next->prev = ptr;
 					}
-					printf("Merged blocks forwards\n");
 				} else {
 					ptr->next->prev = ptr;
 				}
@@ -172,12 +130,7 @@ void myfree(void * mementry, char * myfile, int line) {
 			
 			// After checking to make sure all adjacent memory blocks are merged, set the block's isFree to TRUE.
 			ptr->isFree = TRUE;
-			printf("Freed\n");
 			return;
-		}
-		
-		if(ptr->next == NULL) {
-			printf("%s\n", "It's null");
 		}
 	
 		// Iterate through the linked list of memory blocks.
