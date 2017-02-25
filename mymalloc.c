@@ -1,17 +1,6 @@
 #include "mymalloc.h"
 
-#define FALSE 0
-#define TRUE 1
-#define boolean char
-
 static boolean memInit = 0;
-
-typedef struct _MemoryData {
-	struct _MemoryData * next;
-	struct _MemoryData * prev; 
-	short int size;
-	boolean isFree; 
-}MemoryData; 
 
 static char memoryblock[memorySize]; //Big block of memory
 static MemoryData* mainMemory;
