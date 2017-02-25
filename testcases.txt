@@ -1,0 +1,37 @@
+Rationale Behind Test Cases for mymalloc.c:
+Kenneth Zhang & Kevin Pei  
+
+memgrind5(): 
+
+The purpose for this test case is to test the robustness of our mymalloc.c program through input testing. 
+
+In this code, we're testing how our malloc and free functions respond to improper inputs such as: 
+
+1) Trying to malloc more bytes than there are in memory and how our code responds to that. 
+2) Trying to malloc a non-positive number of bytes. 
+3) Trying to free invalid inputs such as NULL, deferenced pointers, and random integer values which don't correspond to
+malloc entries in our code. 
+
+
+memgrind6(): 
+
+The purpose behind this test case is to test how efficiently and effectively our code is able to store allocated memory. Thus, if there are 
+empty gaps in memory  which could be utilized, this memgrind6() tests that.
+
+The memory addresses which will be returned from our mymalloc() will be stored in void* mementries[1000]. 
+
+The memgrind first mallocs an initial amount equal to 1. This amount is then increased by a factor of two and that amount is malloced. We continue this until the memory is unable to include any
+more memory entries. 
+
+At this point we free every other malloced entry until we reach the total number of entries which we malloced. 
+
+We then malloc entries of bytesize 1. The rationale behind this is that we want to check that every possible location is being utilized. Thus we use the smallest 
+size possible as an argument for our malloc function. 
+
+Finally we free everything. 
+
+
+
+
+
+ 
