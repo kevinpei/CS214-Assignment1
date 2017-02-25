@@ -1,11 +1,9 @@
-PROGRAMS = test
-
+PROGRAMS = mymalloc memgrind
 CC = gcc
-CFLAGS = -Wall
 
-%: %.c %.h
-	$(CC) $(CFLAGS) -o $@ $<
-
+mymallocMake: mymalloc.o memgrind.o
+	$(CC) -o memgrind mymalloc.o memgrind.o
+	 
 .PHONY: all clean
 
 all: $(PROGRAMS)
