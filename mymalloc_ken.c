@@ -58,7 +58,7 @@ void * mymalloc(int size, char* myfile, int line) {
 		int bytesLeft = firstFreeAddress->size;
 		int bytesUsed = 0; 
 		
-		if(firstFreeAddress->next == NULL && firstFreeAddress->size >= size + sizeof(MemoryData)) {	
+		if(firstFreeAddress->next == NULL && firstFreeAddress->size > size + sizeof(MemoryData)) {	
 			MemoryData* newFree = (MemoryData *)((char *)firstFreeAddress + sizeof(MemoryData) + size); //Keeps track of free index
 		
 			newFree->size = firstFreeAddress->size - sizeof(MemoryData) - size; //This keeps track of how much memory is free
@@ -68,10 +68,7 @@ void * mymalloc(int size, char* myfile, int line) {
 			firstFreeAddress->next = newFree;		
 			firstFreeAddress->size = size;
 			firstFreeAddress->isFree = FALSE; 
-		}
-		//bytesUsed = size ;		
-
-		if(firstFreeAddress->next != NULL && firstFreeAddress->size >= size) { //Previously freed memory with enough space. Must check if I'm able to create new metadata in this space after
+		} else if(firstFreeAddress->next != NULL && firstFreeAddress->size >= size) { //Previously freed memory with enough space. Must check if I'm able to create new metadata in this space after
 			printf("Here (1)");
 			if(firstFreeAddress->size - size > sizeof(MemoryData)) { //This means that I can create something new here. 
 				MemoryData* newFree = (MemoryData *)((char *) firstFreeAddress + sizeof(MemoryData) + size);
@@ -83,17 +80,15 @@ void * mymalloc(int size, char* myfile, int line) {
 				if(newFree->next != NULL) {
 					newFree->next->prev = newFree;
 				}
+				newFree->prev = firstFreeAddress;
 				 printf("Here (5)");
 				newFree->isFree = TRUE;
 				 printf("Here (6)");
 				firstFreeAddress->next = newFree;
 				 printf("Here (7)");
-				firstFreeAddress->size = size;
-				firstFreeAddress->isFree = FALSE;
-			} else {
-				firstFreeAddress->size = size;
-				firstFreeAddress->isFree = FALSE;
 			}
+			firstFreeAddress->size = size;
+			firstFreeAddress->isFree = FALSE;
 		}
 
 		//Now I have to change the values for the data I allocated to something.
@@ -119,12 +114,13 @@ void myfree(void * mementry, char * myfile, int line) {
 	
 	// We start the pointer at mainMemory, which is the start of the char array.
 	
-	MemoryData* ptr = (MemoryData *)memoryblock;
+	MemoryData* ptr = mainMemory;
 	
 	// Goes through the linked list of memory blocks until it reaches one whose address matches the address of the freed variable
 	while (ptr != NULL) {
 
 		if (mementry - sizeof(MemoryData) == ptr && ptr->isFree == FALSE) {
+			printf("FOUND IT\n");
 			/* 
 			This code will also merge adjacent free memory blocks, so it checks to see if the next memory block is NULL or not.
 			We do not need to iterate through a while loop because this check will take place after every free, ensuring that every
@@ -169,7 +165,7 @@ void myfree(void * mementry, char * myfile, int line) {
 			ptr->isFree = TRUE;
 			return;
 		}
-	
+		printf("iterate");
 		// Iterate through the linked list of memory blocks.
 		ptr = ptr->next;
 	}
