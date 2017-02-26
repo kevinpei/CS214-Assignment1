@@ -137,10 +137,15 @@ int memgrind5() {
 	free(&x);
 	free(x + 10);
 	*x = 'a';
-//	free(*x);
+	free(*x);
 	return 0;
 }
 
+/*
+This function first allocates an increasing number of bytes in powers of two, then frees every other pointer. Then it fills up the
+holes with malloc calls of 1 byte. Finally, everything is freed. This function tests whether malloc makes efficient use of every
+empty space and how it handles spaces between memory blocks not large enough to hold metadata, e.g. 10 byte gaps.
+*/
 int memgrind6() { 
 	void* mementries[1000];
 	int index = 0; 
@@ -148,10 +153,11 @@ int memgrind6() {
 
 	while(index < 1000) {
 		mementries[index] = malloc(amountToMalloc);
-		
-		if(mementries[index] == NULL) { // If NULL is returned, then there is no more space in memory which can fit. 
+		// If NULL is returned, then there is no more space in memory which can fit. 
+		if(mementries[index] == NULL) { 
 			break;	
 		} else { 
+			// Increase the amount to malloc by a power of 2.
 			amountToMalloc = amountToMalloc * 2; 
 			index++; 
 		}
@@ -160,6 +166,7 @@ int memgrind6() {
 	int max_index = index;
 	index = 0; 
 
+	// Free every other pointer.
 	while(index < max_index) {
 		free(mementries[index]); 
 		index = index + 2; 
@@ -170,9 +177,12 @@ int memgrind6() {
 	while(index < 1000) {
 
 		mementries[index] = malloc(1);
+		// If the malloc call failed because there wasn't enough memory, break.
 		if(mementries[index] == NULL) { 
 			break;
 		}
+		// Fill in every other pointer until index reaches max_index, then fill in every pointer.
+		// This is to fill in every other pointer that was freed previously.
 		if(index >= max_index) {
 			index ++;
 		} else {
@@ -183,8 +193,8 @@ int memgrind6() {
 	max_index = index;		
 	index = 0;
 	
+	// Free all the pointers.
 	while(index < max_index) {
-		
 		free(mementries[index]);
 		index++; 
 	}
@@ -193,6 +203,7 @@ int memgrind6() {
 }
 
 int main(int argc, char *argv[]) {
+	// Get the average running time for each of the memgrinds, then print the results at the end.
 	long long int memgrind1time = getAverageRunningTime(memgrind1);
 	long long int memgrind2time = getAverageRunningTime(memgrind2);
 	long long int memgrind3time = getAverageRunningTime(memgrind3);
