@@ -64,7 +64,9 @@ int memgrind3() {
 		// Either malloc 1 byte until 1000 are allocated in total or free one of the allocated 1 byte pointers.
 		if (rand() % 2 == 0) {
 			testArray[numMalloc] = malloc(1);
-			numMalloc++;
+			if (testArray[numMalloc] != NULL) {
+				numMalloc++;
+			}
 		} else {
 			if (numFree < numMalloc) {
 				free(testArray[numFree]);
@@ -98,10 +100,12 @@ int memgrind4() {
 			// The size allocated is a random number from 1 to 64 bytes.
 			int size = rand() % 64 + 1;
 			testArray[numMalloc] = malloc(size);
-			// The size taken up in main memory is the size malloced plus the size of its metadata.
-			sizeArray[numMalloc] = size + sizeof(MemoryData);
-			sizeMalloc += size + sizeof(MemoryData);
-			numMalloc++;
+			if (testArray[numMalloc] != NULL) {
+				// The size taken up in main memory is the size malloced plus the size of its metadata.
+				sizeArray[numMalloc] = size + sizeof(MemoryData);
+				sizeMalloc += size + sizeof(MemoryData);
+				numMalloc++;
+			}
 		} else {
 			if (numFree < numMalloc) {
 				sizeMalloc -= sizeArray[numFree];
@@ -189,11 +193,17 @@ int memgrind6() {
 }
 
 int main(int argc, char *argv[]) {
-	printf("%lld\n", getAverageRunningTime(memgrind1));
-	printf("%lld\n", getAverageRunningTime(memgrind2));
-	printf("%lld\n", getAverageRunningTime(memgrind3));
-	printf("%lld\n", getAverageRunningTime(memgrind4));
-	printf("%lld\n", getAverageRunningTime(memgrind5));
-	printf("%lld\n", getAverageRunningTime(memgrind6));
+	long long int memgrind1time = getAverageRunningTime(memgrind1);
+	long long int memgrind2time = getAverageRunningTime(memgrind2);
+	long long int memgrind3time = getAverageRunningTime(memgrind3);
+	long long int memgrind4time = getAverageRunningTime(memgrind4);
+	long long int memgrind5time = getAverageRunningTime(memgrind5);
+	long long int memgrind6time = getAverageRunningTime(memgrind6);
+	printf("The average running time of memgrind1 was %lld microseconds.\n", memgrind1time);
+	printf("The average running time of memgrind2 was %lld microseconds.\n", memgrind2time);
+	printf("The average running time of memgrind3 was %lld microseconds.\n", memgrind3time);
+	printf("The average running time of memgrind4 was %lld microseconds.\n", memgrind4time);
+	printf("The average running time of memgrind5 was %lld microseconds.\n", memgrind5time);
+	printf("The average running time of memgrind6 was %lld microseconds.\n", memgrind6time);
 	return 0;
 }
