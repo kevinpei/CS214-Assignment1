@@ -89,6 +89,10 @@ void * mymalloc(int size, char* myfile, int line) {
 			}
 			firstFreeAddress->size = size;
 			firstFreeAddress->isFree = FALSE;
+		} else if(firstFreeAddress->size >= size && firstFreeAddress->next == NULL) {
+			firstFreeAddress->size = size;
+			firstFreeAddress->isFree = FALSE;
+			 
 		}
 
 		//Now I have to change the values for the data I allocated to something.
@@ -111,7 +115,7 @@ void * mymalloc(int size, char* myfile, int line) {
 }
 
 void myfree(void * mementry, char * myfile, int line) {
-	
+	printf("FREE CALL!");
 	// We start the pointer at mainMemory, which is the start of the char array.
 	
 	MemoryData* ptr = mainMemory;
